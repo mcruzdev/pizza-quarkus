@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cloud Native - Pizza Store</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="main.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body onload="connect()">
+    <noscript>
+        <h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
+            enabled. Please enable
+            Javascript and reload this page!</h2>
+    </noscript>
+    <header>
+        <div class="pizza-place">
+            <h1>Pizza Store</h1>
+            <h2><a href="https://github.com/salaboy/pizza">https://github.com/salaboy/pizza</a></h2>
+        </div>
+        <div class="pizza-order">
+            <h5>Your order:</h5>
+            <p>Name: Salaboy</p>
+            <p>Address: KubeCon NA - Chicago</p>
+            <p>Credit Card: 4444-5555-2222-3333</p>
+            <div class="pizza-item">
+                <img alt="pepperoni" title="pepperoni" src="imgs/PizzaPepperoni.png">Vegan Pepperoni + Ice Tea</img>
+            </div>
+            <button id="placeOrder" class="button main" type="submit">Place Order</button>
+        </div>
+    </header>
+    <div id="main-content" class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Order Status</h2>
+                <div class="">
+                    <div id="status">
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2>Events</h2>
+                <div class="">
+                    <div id="events">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
