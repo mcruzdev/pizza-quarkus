@@ -3,7 +3,6 @@ package io.diagrid.dapr;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -20,7 +19,6 @@ import io.quarkiverse.dapr.core.SyncDaprClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;

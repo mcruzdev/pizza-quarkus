@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import io.dapr.client.domain.Metadata;
 import io.quarkiverse.dapr.core.SyncDaprClient;
@@ -81,6 +82,28 @@ public class PizzaKitchenResource {
                 event,
                 Collections.singletonMap(Metadata.TTL_IN_SECONDS, MESSAGE_TTL_IN_SECONDS));
 
+    }
+
+    public enum EventType {
+        ORDER_PLACED("order-placed"),
+        ITEMS_IN_STOCK("items-in-stock"),
+        ITEMS_NOT_IN_STOCK("items-not-in-stock"),
+        ORDER_IN_PREPARATION("order-in-preparation"),
+        ORDER_READY("order-ready"),
+        ORDER_OUT_FOR_DELIVERY("order-out-for-delivery"),
+        ORDER_ON_ITS_WAY("order-on-its-way"),
+        ORDER_COMPLETED("order-completed");
+
+        private String type;
+
+        EventType(String type) {
+            this.type = type;
+        }
+
+        @JsonValue
+        public String getType() {
+            return type;
+        }
     }
 
     public record Event(EventType type, Order order, String service, String message) {
