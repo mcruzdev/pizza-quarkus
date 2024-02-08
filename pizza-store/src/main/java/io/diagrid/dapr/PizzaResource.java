@@ -59,7 +59,7 @@ public class PizzaResource {
     @Path("/")
     @Produces(value = MediaType.TEXT_HTML)
     public TemplateInstance page() {
-        return index.data(null);
+        return index.data("event", "Sou Java + Ifood");
     }
 
     @GET
