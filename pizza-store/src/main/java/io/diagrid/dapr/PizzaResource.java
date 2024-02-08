@@ -13,14 +13,18 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import io.dapr.client.domain.CloudEvent;
 import io.dapr.client.domain.State;
 import io.quarkiverse.dapr.core.SyncDaprClient;
-import jakarta.inject.Inject;
+import io.quarkus.qute.Template;
+import io.quarkus.qute.TemplateInstance;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path(value = "/")
@@ -34,22 +38,32 @@ public class PizzaResource {
     private String publicIp;
     private DeliveryRestClient deliveryRestClient;
     private KitchenRestClient kitchenRestClient;
+    private Template index;
 
-    @Inject
     public PizzaResource(
             SyncDaprClient daprClient,
             @RestClient DeliveryRestClient deliveryRestClient,
             @RestClient KitchenRestClient kitchenRestClient,
             @ConfigProperty(name = "state.store.name") String stateStoreName,
-            @ConfigProperty(name = "public.ip") String publicIp) {
+            @ConfigProperty(name = "public.ip") String publicIp,
+            Template index) {
         this.daprClient = daprClient;
         this.kitchenRestClient = kitchenRestClient;
         this.deliveryRestClient = deliveryRestClient;
         this.stateStoreName = stateStoreName;
         this.publicIp = publicIp;
+        this.index = index;
     }
 
     @GET
+    @Path("/")
+    @Produces(value = MediaType.TEXT_HTML)
+    public TemplateInstance page() {
+        return index.data(null);
+    }
+
+    @GET
+    @Path("/server-info")
     public Info getInfo() {
         return new Info(this.publicIp);
     }
