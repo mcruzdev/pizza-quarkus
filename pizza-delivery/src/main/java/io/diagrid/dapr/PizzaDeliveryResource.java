@@ -1,17 +1,20 @@
 package io.diagrid.dapr;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.type.Date;
 
-import io.dapr.client.DaprClient;
-import io.dapr.client.DaprClientBuilder;
 import io.dapr.client.domain.Metadata;
+import io.quarkiverse.dapr.core.SyncDaprClient;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
@@ -20,24 +23,39 @@ import jakarta.ws.rs.core.Response;
 public class PizzaDeliveryResource {
 
     private static final String MESSAGE_TTL_IN_SECONDS = "1000";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(PizzaDeliveryResource.class);
     private String pubsubName;
     private String pubsubTopic;
+    private SyncDaprClient daprClient;
+    private ObjectMapper objectMapper;
 
     public PizzaDeliveryResource(
+            SyncDaprClient daprClient,
+            ObjectMapper objectMapper,
             @ConfigProperty(name = "pubsub.name") String pubsubName,
             @ConfigProperty(name = "pubsub.topic") String pubsubTopic) {
+        this.daprClient = daprClient;
         this.pubsubName = pubsubName;
         this.pubsubTopic = pubsubTopic;
+        this.objectMapper = objectMapper;
     }
 
     @PUT
+    @Consumes("application/json")
     @Path("/deliver")
-    public Response deliveOrder(Order order) {
+    public Response deliveOrder(final String req) {
+        LOGGER.info("Received order {}", req);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // Emit Event
+                Order order = null;
+                try {
+                    order = objectMapper.readValue(req, Order.class);
+                } catch (Exception e) {
+                    LOGGER.error("Error {}", e);
+                }
+
                 Event event = new Event(EventType.ORDER_ON_ITS_WAY, order, "delivery",
                         "The order is on its way to your address.");
                 emitEvent(event);
@@ -71,11 +89,12 @@ public class PizzaDeliveryResource {
 
             }
         }).start();
-
+        LOGGER.info("Returning response 200");
         return Response.ok().build();
     }
 
-    public record Event(EventType type, Order order, String service, String message) {
+    public record Event(@JsonProperty EventType type, @JsonProperty Order order, @JsonProperty String service,
+            @JsonProperty String message) {
     }
 
     public enum EventType {
@@ -112,14 +131,11 @@ public class PizzaDeliveryResource {
     }
 
     private void emitEvent(Event event) {
-        System.out.println("> Emitting Delivery Event: " + event.toString());
-        try (DaprClient client = (new DaprClientBuilder()).build()) {
-            client.publishEvent(pubsubName,
-                    pubsubTopic,
-                    event,
-                    Collections.singletonMap(Metadata.TTL_IN_SECONDS, MESSAGE_TTL_IN_SECONDS)).block();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        LOGGER.info("> Emitting Delivery Event: {}", event);
+
+        this.daprClient.publishEvent(pubsubName,
+                pubsubTopic,
+                event,
+                Map.of(Metadata.TTL_IN_SECONDS, MESSAGE_TTL_IN_SECONDS));
     }
 }

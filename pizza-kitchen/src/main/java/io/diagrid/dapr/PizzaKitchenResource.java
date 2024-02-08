@@ -40,8 +40,8 @@ public class PizzaKitchenResource {
     }
 
     @PUT
-    public Response prepareOrder(
-            final Order order) {
+    @Path("/prepare")
+    public Response prepareOrder(final Order order) {
 
         new Thread(new Runnable() {
             @Override

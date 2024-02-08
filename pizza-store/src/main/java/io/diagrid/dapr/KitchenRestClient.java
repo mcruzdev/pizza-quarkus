@@ -7,8 +7,8 @@ import io.diagrid.dapr.PizzaResource.Order;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 
-@RegisterRestClient(configKey = "kitchen-service")
 @Path("/prepare")
+@RegisterRestClient(configKey = "kitchen-service")
 public interface KitchenRestClient {
 
     @PUT

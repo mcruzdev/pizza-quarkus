@@ -1,5 +1,4 @@
-const stompClient = new StompJs.Client({
-});
+
 
 function connect() {
     console.log("Fetching Server Info")
@@ -12,35 +11,32 @@ function connect() {
         console.log("Fetching Response")
         return response.json();
     }).then((response) => {
+        console.log('publicIP', response.publicIP)
         var publicURL = 'ws://' + response.publicIp + '/ws';
-        stompClient.brokerURL = publicURL;
-        console.log(publicURL);
-        console.log("Activating client")
-        stompClient.activate();
+
+        const webSocket = new WebSocket(publicURL);
+
+        webSocket.onopen = function () {
+            setConnected(true);
+            console.log('Connected!');
+        }
+
+        webSocket.onmessage = function (m) {
+            console.log(JSON.parse(m.data));
+            showEvent(m.data);
+        }
+
+        webSocket.onerror = function (err) {
+            console.error('Error with websocket', err);
+        }
+
+
     }).catch((error) => {
         console.error(`Could not get server-info: ${error}`);
     });
 
 };
 
-stompClient.onConnect = (frame) => {
-    setConnected(true);
-    console.log('Connected: ' + frame);
-    stompClient.subscribe('/topic/events', (event) => {
-        console.log(JSON.parse(event.body));
-        showEvent(event.body);
-
-    });
-};
-
-stompClient.onWebSocketError = (error) => {
-    console.error('Error with websocket', error);
-};
-
-stompClient.onStompError = (frame) => {
-    console.error('Broker reported error: ' + frame.headers['message']);
-    console.error('Additional details: ' + frame.body);
-};
 
 function setConnected(connected) {
     $("#connect").prop("disabled", connected);

@@ -13,7 +13,10 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
 import io.dapr.client.domain.State;
 import io.quarkiverse.dapr.core.SyncDaprClient;
@@ -38,18 +41,21 @@ public class PizzaResource {
     private String publicIp;
     private DeliveryRestClient deliveryRestClient;
     private KitchenRestClient kitchenRestClient;
+    private ObjectMapper objectMapper;
     private Template index;
 
     public PizzaResource(
             SyncDaprClient daprClient,
             @RestClient DeliveryRestClient deliveryRestClient,
             @RestClient KitchenRestClient kitchenRestClient,
+            ObjectMapper objectMapper,
             @ConfigProperty(name = "state.store.name") String stateStoreName,
             @ConfigProperty(name = "public.ip") String publicIp,
             Template index) {
         this.daprClient = daprClient;
         this.kitchenRestClient = kitchenRestClient;
         this.deliveryRestClient = deliveryRestClient;
+        this.objectMapper = objectMapper;
         this.stateStoreName = stateStoreName;
         this.publicIp = publicIp;
         this.index = index;
@@ -69,13 +75,14 @@ public class PizzaResource {
     }
 
     @POST
-    @Path("/events")
-    @Consumes(value = "application/cloudevents+json")
+    @Topic(name = "topic", pubsubName = "pubsub")
+    @Path("events")
     public void receiveEvents(CloudEvent<Event> event) {
-
-        LOGGER.info("Received CloudEvent via Subscription: {}", event);
-
         Event pizzaEvent = event.getData();
+
+        emitWSEvent(pizzaEvent);
+
+        LOGGER.info("Received CloudEvent via Subscription: {}", pizzaEvent);
 
         if (pizzaEvent.type.equals(EventType.ORDER_READY)) {
             prepareOrderForDelivery(pizzaEvent.order);
@@ -122,6 +129,21 @@ public class PizzaResource {
 
     private void emitWSEvent(Event event) {
         LOGGER.info("Emitting Event via WS: {}", event.toString());
+        try {
+            String eventAsString = this.objectMapper.writeValueAsString(event);
+            Websocket.SESSIONS.forEach(
+                    (k, v) -> {
+
+                        v.getAsyncRemote().sendObject(eventAsString, result -> {
+                            if (result.getException() != null) {
+                                LOGGER.info("Unable to send message: {}", result.getException());
+                            }
+                        });
+                    });
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     private void store(Order order) {
