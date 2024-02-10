@@ -2,6 +2,8 @@
 
 This repository contains a simple example for a Pizza Store application using Kubernetes, [Dapr](https://dapr.io) and [Testcontainers](https://testcontainers.com) with [Quarkus](https://pt.quarkus.io/) to enable developers with an awesome developer experience.
 
+> This repository is a copy of the https://github.com/salaboy/pizza repository, rewritten using Quarkus.
+
 ![testcontainers-dapr-and-quarkus-logo](imgs/testcontainers-dapr-quarkus.png)
 
 You can run this application on any Kubernetes cluster by following the step-by-step insturctions described in this document. 
