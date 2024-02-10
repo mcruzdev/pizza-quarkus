@@ -22,7 +22,6 @@ import io.dapr.client.domain.State;
 import io.quarkiverse.dapr.core.SyncDaprClient;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;

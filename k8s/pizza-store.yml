@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    dapr.io/app-id: store-service
+    dapr.io/app-port: "8080"
+    dapr.io/enabled: "true"
+    dapr.io/log-level: debug
+    app.quarkus.io/quarkus-version: 3.7.1
+    app.quarkus.io/commit-id: 96c8438f3910b13e4d1441d1e417962677b73275
+    app.quarkus.io/vcs-uri: git@github.com:mcruzdev/pizza-quarkus.git
+    app.quarkus.io/build-timestamp: 2024-02-10 - 14:54:10 +0000
+  labels:
+    app.kubernetes.io/name: pizza-store
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.kubernetes.io/managed-by: quarkus
+  name: pizza-store
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: pizza-store
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    dapr.io/app-id: store-service
+    dapr.io/app-port: "8080"
+    dapr.io/enabled: "true"
+    dapr.io/log-level: debug
+    app.quarkus.io/quarkus-version: 3.7.1
+    app.quarkus.io/commit-id: 96c8438f3910b13e4d1441d1e417962677b73275
+    app.quarkus.io/vcs-uri: git@github.com:mcruzdev/pizza-quarkus.git
+    app.quarkus.io/build-timestamp: 2024-02-10 - 14:54:10 +0000
+  labels:
+    app.kubernetes.io/name: pizza-store
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.kubernetes.io/managed-by: quarkus
+  name: pizza-store
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/version: 1.0.0-SNAPSHOT
+      app.kubernetes.io/name: pizza-store
+  template:
+    metadata:
+      annotations:
+        dapr.io/app-id: store-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
+        dapr.io/log-level: debug
+        app.quarkus.io/quarkus-version: 3.7.1
+        app.quarkus.io/commit-id: 96c8438f3910b13e4d1441d1e417962677b73275
+        app.quarkus.io/vcs-uri: git@github.com:mcruzdev/pizza-quarkus.git
+        app.quarkus.io/build-timestamp: 2024-02-10 - 14:54:10 +0000
+      labels:
+        app.kubernetes.io/managed-by: quarkus
+        app.kubernetes.io/version: 1.0.0-SNAPSHOT
+        app.kubernetes.io/name: pizza-store
+      namespace: default
+    spec:
+      containers:
+        - env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          image: docker.io/matheuscruzdev/pizza-store:0.0.1
+          imagePullPolicy: Always
+          name: pizza-store
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
