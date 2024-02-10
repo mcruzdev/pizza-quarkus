@@ -43,32 +43,29 @@ public class PizzaKitchenResource {
     @Path("/prepare")
     public Response prepareOrder(final Order order) {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Emit Event
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                Event event = new Event(EventType.ORDER_IN_PREPARATION, order, "kitchen",
-                        "The order is now in the kitchen.");
-                emitEvent(event);
-                for (OrderItem orderItem : order.items) {
-
-                    int pizzaPrepTime = RANDOM.nextInt(15 * MS_IN_SECOND);
-                    LOGGER.info("Preparing this {} pizza will take: {}", orderItem.type, pizzaPrepTime);
-                    try {
-                        Thread.sleep(pizzaPrepTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                event = new Event(EventType.ORDER_READY, order, "kitchen",
-                        "Your pizza is ready and waiting to be delivered.");
-                emitEvent(event);
+        new Thread(() -> {
+            // Emit Event
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                LOGGER.warn("Thread.sleep(5000) failed");
             }
+            Event event = new Event(EventType.ORDER_IN_PREPARATION, order, "kitchen",
+                    "The order is now in the kitchen.");
+            emitEvent(event);
+            for (OrderItem orderItem : order.items) {
+
+                int pizzaPrepTime = RANDOM.nextInt(15 * MS_IN_SECOND);
+                LOGGER.info("Preparing this {} pizza will take: {}", orderItem.type, pizzaPrepTime);
+                try {
+                    Thread.sleep(pizzaPrepTime);
+                } catch (InterruptedException e) {
+                LOGGER.warn("Thread.sleep({}) failed", pizzaPrepTime);
+                }
+            }
+            event = new Event(EventType.ORDER_READY, order, "kitchen",
+                    "Your pizza is ready and waiting to be delivered.");
+            emitEvent(event);
         }).start();
 
         return Response.ok().build();
