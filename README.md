@@ -71,17 +71,17 @@ Then you can point your browser to [`http://localhost:8080`](http://localhost:80
 
 ## Building from source / changing the services
 
-The application services are written using Java + Spring Boot. These services use the Dapr Java SDK to interact with the Dapr [PubSub](https://docs.dapr.io/getting-started/quickstarts/pubsub-quickstart/) and [Statestore](https://docs.dapr.io/getting-started/quickstarts/statemanagement-quickstart/) APIs. 
+The application services are written using Java + Quarkus. These services use the Dapr Extension to interact with the Dapr [PubSub](https://docs.dapr.io/getting-started/quickstarts/pubsub-quickstart/) and [Statestore](https://docs.dapr.io/getting-started/quickstarts/statemanagement-quickstart/) APIs. 
 
 To run the services locally you can use the [Testcontainer](https://testcontainaers.com) integration already included in the projects. 
 
 For example you can start a local version of the `pizza-store` service by running the following command inside the `pizza-store/` directory (this requires having Java and [Maven](https://maven.apache.org/) installed locally):
 
 ```
-mvn spring-boot:test-run
+quarkus dev
 ```
 
-This, not only start the `pizza-store` service, but it also uses the [Testcontainers + Dapr Spring Boot](https://central.sonatype.com/artifact/io.diagrid.dapr/dapr-spring-boot-starter) integration to configure and wire up a Dapr configuration for local development. In other words, you can now use Dapr outside of Kubernetes, for writing your service tests without the need to know how Dapr is configured. 
+This, not only start the `pizza-store` service, but it also uses the [Testcontainers + Dev Services for Dapr](https://github.com/quarkiverse/quarkus-dapr) integration to configure and wire up a Dapr configuration for local development. In other words, you can now use Dapr outside of Kubernetes, for writing your service tests without the need to know how Dapr is configured. 
 
 
 Once the service is up, you can place orders and simulate other events coming from the Kitchen and Delivery services by sending HTTP requests to the `/events` endpoint. 
