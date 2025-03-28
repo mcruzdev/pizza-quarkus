@@ -1,0 +1,45 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "*"
+    paths-ignore:
+      - '.gitignore'
+      - 'CODEOWNERS'
+      - 'LICENSE'
+      - '*.md'
+      - '*.adoc'
+      - '*.txt'
+      - '.all-contributorsrc'
+  pull_request:
+    paths-ignore:
+      - '.gitignore'
+      - 'CODEOWNERS'
+      - 'LICENSE'
+      - '*.md'
+      - '*.adoc'
+      - '*.txt'
+      - '.all-contributorsrc'
+jobs:
+  build:
+    name: Build on ${{ matrix.os }} with Java ${{ matrix.java.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        java: [
+          { 'version': '21' }
+        ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK ${{matrix.java.version}}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{matrix.java.version}}
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn -B clean verify -Dno-format
