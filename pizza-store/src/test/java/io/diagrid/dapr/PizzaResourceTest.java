@@ -82,7 +82,7 @@ class PizzaResourceTest {
       String first = MESSAGES.getFirst();
 
       assertEquals("CONNECT", first);
-      assertThat(last, Matchers.containsString("john.doe@email.com"));
+      assertThat(last, Matchers.containsString("john.doe@gmail.com"));
     }
   }
 
