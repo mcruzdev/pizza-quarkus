@@ -2,11 +2,11 @@ package io.diagrid.dapr;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static io.restassured.RestAssured.given;
-import static io.undertow.websockets.JsrWebSocketMessages.MESSAGES;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import io.dapr.client.domain.State;
 import io.quarkiverse.dapr.core.SyncDaprClient;
 import io.quarkiverse.wiremock.devservice.ConnectWireMock;
 import io.quarkus.test.common.http.TestHTTPResource;
@@ -16,11 +16,15 @@ import jakarta.inject.Inject;
 import jakarta.websocket.*;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 @QuarkusTest
 @ConnectWireMock
@@ -30,10 +34,47 @@ class PizzaResourceTest {
   WireMock wiremock;
 
   @Inject SyncDaprClient daprClient;
+           @ConfigProperty(name = "state.store.name") String stateStoreName;
+
+
+  @TestHTTPResource("/ws")
+  URI uri;
 
   @BeforeEach
   void beforeEach() {
     MESSAGES.clear();
+  }
+
+  @Test
+  void should_receive_the_request_correctly() {
+    given()
+          .contentType(ContentType.JSON)
+          .body("""
+                {
+                  "customer": {
+                    "name": "mcruzdev",
+                    "email": "mcruzdev@mail.com"
+                  },
+                  "items": [
+                    {
+                      "type": "pepperoni",
+                      "amount": 1
+                    }
+                  ]
+                }
+                """)
+          .post("/order")
+          .then()
+          .statusCode(200);
+
+     Awaitility.await("wait until message is on database")
+           .atMost(Duration.ofSeconds(30))
+           .until(() -> {
+
+              State<PizzaResource.Orders> orders = daprClient.getState(stateStoreName, "orders",
+                    PizzaResource.Orders.class);
+              return orders.getValue() != null;
+           });
   }
 
   @Test
@@ -45,9 +86,6 @@ class PizzaResourceTest {
         .statusCode(200)
         .body("publicIp", Matchers.equalTo("localhost:8080"));
   }
-
-  @TestHTTPResource("/ws")
-  URI uri;
 
   @Test
   void should_place_order_correctly() {

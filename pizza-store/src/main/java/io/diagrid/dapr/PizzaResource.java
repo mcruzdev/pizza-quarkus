@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -86,6 +87,11 @@ public class PizzaResource {
    @POST
    @Path("/order")
    public Response placeOrder(Order order) {
+
+      if (order == null) {
+         return Response.status(400).build();
+      }
+
       new Thread(() -> {
          // Emit Event
          Event event = new Event(EventType.ORDER_PLACED, order, "store",
@@ -175,7 +181,7 @@ public class PizzaResource {
       }
    }
 
-   private record Orders(@JsonProperty List<Order> orders) {
+   public record Orders(@JsonProperty List<Order> orders) {
    }
 
    public record Order(@JsonProperty String id, @JsonProperty Customer customer, @JsonProperty List<OrderItem> items,
@@ -190,16 +196,8 @@ public class PizzaResource {
          }
          this.customer = customer;
          this.items = items;
-         if (orderDate == null) {
-            this.orderDate = new Date();
-         } else {
-            this.orderDate = orderDate;
-         }
-         if (status == null) {
-            this.status = Status.created;
-         } else {
-            this.status = status;
-         }
+         this.orderDate = Objects.requireNonNullElseGet(orderDate, Date::new);
+         this.status = Objects.requireNonNullElse(status, Status.created);
       }
 
       public Order(Customer customer, List<OrderItem> items, Date orderDate, Status status) {
