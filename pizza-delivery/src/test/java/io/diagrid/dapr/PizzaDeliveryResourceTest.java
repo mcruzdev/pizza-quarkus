@@ -41,7 +41,7 @@ class PizzaDeliveryResourceTest {
       // when
       given().contentType(ContentType.APPLICATION_JSON.getMimeType()).body(requestBody).when().put("/deliver").then()
             .statusCode(200);
-      
+
       Awaitility.await().atMost(Duration.ofMinutes(1)).pollInterval(Duration.ofSeconds(5)).untilAsserted(() -> {
          List<CloudEvent<PizzaDeliveryResource.Event>> events = subscriptionResource.getAllEvents();
          Assertions.assertEquals(4, events.size(), "Four published event are expected");
